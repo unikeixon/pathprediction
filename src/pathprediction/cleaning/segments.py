@@ -32,3 +32,10 @@ def segment_summary(df):
         "n_points": grouped.size(),
         "duration_min": (grouped["time"].max() - grouped["time"].min()).dt.total_seconds() / 60,
     })
+
+min_segment = 5  # segments shorter than this are dropped (minutes)
+def drop_short_segments(df, min_minutes=min_segment):
+    """Keep only the segments that last at least `min_minutes`."""
+    durations = df.groupby("segment_id")["time"].agg(lambda t: (t.max() - t.min()).total_seconds() / 60)
+    keep = durations[durations >= min_minutes].index
+    return df[df["segment_id"].isin(keep)].reset_index(drop=True)
